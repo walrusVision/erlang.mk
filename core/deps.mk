@@ -481,6 +481,20 @@ endef
 define dep_fetch_hex.erl
 	ssl:start(),
 	inets:start(),
+	case os:get("HTTPS_PROXY") of
+		Proxy ->
+			{ok, {_, _, Host, Prot, _, _}} = httpc_uri:parse(Proxy),
+			httpc:set_options([{https_proxy, {{Host, Port}, []}}]);
+		_ ->
+			ok
+	end,
+	case os:get("HTTP_PROXY") of
+		Proxy ->
+			{ok, {_, _, Host, Prot, _, _}} = httpc_uri:parse(Proxy),
+			httpc:set_options([{http_proxy, {{Host, Port}, []}}]);
+		_ ->
+			ok
+	end,
 	{ok, {{_, 200, _}, _, Body}} = httpc:request(get,
 		{"https://s3.amazonaws.com/s3.hex.pm/tarballs/$(1)-$(2).tar", []},
 		[], [{body_format, binary}]),
